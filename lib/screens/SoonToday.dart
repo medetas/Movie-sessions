@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:movie_list/screens/movie.dart';
+import 'package:movie_list/screens/tags.dart';
 
 class SoonToday extends StatefulWidget {
   Future<List> futureList2;
@@ -24,6 +25,8 @@ class _SoonTodayState extends State<SoonToday> {
     12: [Colors.deepOrange[400], Colors.deepOrange[800]],
     18: [Colors.red[600], Colors.red[900]],
   };
+
+  List<Widget> tags;
 
   @override
   Widget build(BuildContext context) {
@@ -50,24 +53,10 @@ class _SoonTodayState extends State<SoonToday> {
                   enlargeCenterPage: true,
                 ),
                 itemBuilder: (context, index) {
-                  List<Color> ageColor;
-                  int age_restriction =
-                      movies_list.elementAt(index)['age_restriction'];
-                  if (0 <= age_restriction && age_restriction < 6) {
-                    ageColor = ageList[0];
-                  } else if (6 <= age_restriction && age_restriction < 12) {
-                    ageColor = ageList[6];
-                  } else if (12 <= age_restriction && age_restriction < 18) {
-                    ageColor = ageList[12];
-                  } else {
-                    ageColor = ageList[18];
-                  }
-
-                  String rating = movies_list.elementAt(index)['rating'] != 0
-                      ? movies_list
-                          .elementAt(index)['rating']
-                          .toStringAsFixed(1)
-                      : '-';
+                  tags = [
+                    Tags('rating', movies_list.elementAt(index)['rating']),
+                    Tags('age', movies_list.elementAt(index)['age_restriction'])
+                  ];
 
                   return InkWell(
                       onTap: () {
@@ -95,74 +84,7 @@ class _SoonTodayState extends State<SoonToday> {
                               child: Column(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              Card(
-                                elevation: 10,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.only(
-                                      topLeft: Radius.circular(5),
-                                      bottomLeft: Radius.circular(5)),
-                                ),
-                                child: Container(
-                                    padding: EdgeInsets.symmetric(
-                                        vertical: 3, horizontal: 3),
-                                    decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.only(
-                                            topLeft: Radius.circular(5),
-                                            bottomLeft: Radius.circular(5)),
-                                        gradient: LinearGradient(
-                                            begin: Alignment.topLeft,
-                                            end: Alignment.bottomRight,
-                                            colors: [
-                                              Colors.green[400],
-                                              Colors.green[900]
-                                            ])),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Icon(
-                                          Icons.star,
-                                          color: Colors.white,
-                                          size: 20,
-                                        ),
-                                        Text(
-                                          rating,
-                                          style: TextStyle(
-                                            color: textColor,
-                                            fontSize: 20,
-                                            fontWeight: FontWeight.w700,
-                                          ),
-                                          textAlign: TextAlign.center,
-                                        ),
-                                      ],
-                                    )),
-                              ),
-                              Card(
-                                elevation: 10,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                child: Container(
-                                  padding: EdgeInsets.symmetric(
-                                      vertical: 3, horizontal: 3),
-                                  decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(20),
-                                      gradient: LinearGradient(
-                                          begin: Alignment.topLeft,
-                                          end: Alignment.bottomRight,
-                                          colors: ageColor)),
-                                  child: Text(
-                                    age_restriction.toString() + '+',
-                                    style: TextStyle(
-                                      color: textColor,
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                                    textAlign: TextAlign.center,
-                                  ),
-                                ),
-                              )
-                            ],
+                            children: tags,
                           ))));
                 },
               )),

@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:movie_list/screens/tags.dart';
 
 import 'package:movie_list/util/fetchMovie.dart';
 
@@ -14,13 +15,14 @@ class Movie extends StatefulWidget {
 class _MovieState extends State<Movie> {
   int id_movie;
   _MovieState(this.id_movie);
-  Future<Map> futureList;
+  Future<Map> futureMovie;
+  List<Widget> tags;
 
   @override
   void initState() {
     super.initState();
     MovieFetcher instance = MovieFetcher(id_movie: id_movie);
-    futureList = instance.fetchMovie();
+    futureMovie = instance.fetchMovie();
   }
 
   @override
@@ -28,10 +30,35 @@ class _MovieState extends State<Movie> {
     return Scaffold(
         backgroundColor: Colors.grey[300],
         body: FutureBuilder(
-          future: futureList,
+          future: futureMovie,
           builder: (context, snapshot) {
             if (snapshot.hasData) {
               Map movie_list = snapshot.data ?? {};
+              tags = [
+                Tags('rating', movie_list['rating']),
+                Tags('age', movie_list['age_restriction'])
+              ];
+              //TODO remove last comma of genres
+              String genres = movie_list['genre'] != null
+                  ? movie_list['genre']
+                  : movie_list['genres'].fold(
+                      '', (sum, element) => sum + element['title'] + ',\n');
+              List detailsValue = [
+                movie_list['name_origin'],
+                movie_list['production'],
+                movie_list['director'],
+                movie_list['duration'],
+                genres,
+                movie_list['premiere_kaz'],
+              ];
+              List detailsKey = [
+                'Оригинальное название:',
+                'Производство:',
+                'Режиссер:',
+                'Продолжительность:',
+                'Жанр:',
+                'Премьера:',
+              ];
               return CustomScrollView(
                   physics: const BouncingScrollPhysics(),
                   slivers: <Widget>[
@@ -56,41 +83,35 @@ class _MovieState extends State<Movie> {
                             children: <Widget>[
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.end,
-                                children: [
-                                  Container(
-                                    padding: EdgeInsets.symmetric(
-                                        vertical: 8, horizontal: 8),
-                                    decoration: BoxDecoration(
-                                      color: Colors.green[700],
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: Text(
-                                      movie_list['rating'] != null
-                                          ? (movie_list['rating'])
-                                              .toStringAsFixed(1)
-                                          : '-',
-                                    ),
-                                  ),
-                                ],
+                                children: tags,
                               ),
                               Container(
-                                width: MediaQuery.of(context).size.width,
-                                decoration: BoxDecoration(
-                                  color: Colors.green[700],
-                                  borderRadius: BorderRadius.only(
-                                      topLeft: Radius.circular(30),
-                                      topRight: Radius.circular(30)),
-                                ),
-                                child: Text(
-                                  movie_list['name_rus'],
-                                  textAlign: TextAlign.center,
-                                  maxLines: 1,
-                                  style: TextStyle(
-                                      fontSize:
-                                          MediaQuery.of(context).size.width /
-                                              25),
-                                ),
-                              ),
+                                  padding: EdgeInsets.only(
+                                      left: 13,
+                                      right:
+                                          12), //TODO hardcoded width of title
+                                  width: MediaQuery.of(context).size.width,
+                                  transform: Matrix4.translationValues(0, 5, 0),
+                                  child: Card(
+                                      elevation: 10,
+                                      color: Colors.green[700],
+                                      shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.only(
+                                              topLeft: Radius.circular(30),
+                                              topRight: Radius.circular(30))),
+                                      child: Container(
+                                        alignment: Alignment.center,
+                                        child: Text(
+                                          movie_list['name_rus'],
+                                          textAlign: TextAlign.center,
+                                          style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: MediaQuery.of(context)
+                                                      .size
+                                                      .width /
+                                                  25),
+                                        ),
+                                      ))),
                             ],
                           ),
                         ),
@@ -104,10 +125,10 @@ class _MovieState extends State<Movie> {
                             const DecoratedBox(
                               decoration: BoxDecoration(
                                 gradient: LinearGradient(
-                                  begin: Alignment(0.0, 0.5),
+                                  begin: Alignment(0.0, 0.8),
                                   end: Alignment(0.0, 0.0),
                                   colors: <Color>[
-                                    Color(0x60000000),
+                                    Color(0xee000000),
                                     Color(0x00000000),
                                   ],
                                 ),
@@ -120,11 +141,35 @@ class _MovieState extends State<Movie> {
                     SliverList(
                       delegate: SliverChildListDelegate([
                         Container(
-                          child: Card(
-                            elevation: 10,
-                            child: Text(movie_list['description']),
-                          ),
-                        ),
+                            transform: Matrix4.translationValues(0, -5, 0),
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 20, vertical: 0),
+                            child: Card(
+                                elevation: 10,
+                                child: ListView.builder(
+                                  //TODO change widget to scrollable one or/and make it collapsable
+                                  shrinkWrap: true,
+                                  itemCount: detailsKey.length,
+                                  itemBuilder: (context, index) {
+                                    return ListView(
+                                      shrinkWrap:
+                                          true, //TODO scrolling each item (fix it)
+                                      children: [
+                                        Row(
+                                          //TODO if overflowed go to newline
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(detailsKey[index]),
+                                            Text(detailsValue[index]),
+                                          ],
+                                        )
+                                      ],
+                                    );
+                                  },
+                                ))),
                       ]),
                     ),
                   ]);

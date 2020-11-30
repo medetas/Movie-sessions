@@ -35,7 +35,7 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     super.initState();
 
-    HomeFetcher instance2 = HomeFetcher(id_city: 3);
+    HomeFetcher instance2 = HomeFetcher(id_city: 2);
     futureSoon = instance2.fetchSoon();
     futureTodays = instance2.fetchTodays();
 
@@ -83,9 +83,12 @@ class _MyAppState extends State<MyApp> {
       appBar: AppBar(
         title: Text(titles[selectedIndex]),
         actions: [
-          Text(
-            labelCity,
-            textAlign: TextAlign.center,
+          Container(
+            alignment: Alignment.center,
+            child: Text(
+              labelCity,
+              style: TextStyle(fontSize: 16),
+            ),
           ),
           IconButton(
               icon: Icon(Icons.location_on),
