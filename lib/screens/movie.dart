@@ -1,5 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:movie_list/screens/sessions.dart';
 import 'package:movie_list/screens/tags.dart';
 
 import 'package:movie_list/util/fetchMovie.dart';
@@ -16,6 +18,7 @@ class _MovieState extends State<Movie> {
   int id_movie;
   _MovieState(this.id_movie);
   Future<Map> futureMovie;
+  Future<List> futureSessions;
   List<Widget> tags;
 
   @override
@@ -23,6 +26,7 @@ class _MovieState extends State<Movie> {
     super.initState();
     MovieFetcher instance = MovieFetcher(id_movie: id_movie);
     futureMovie = instance.fetchMovie();
+    futureSessions = instance.fetchSessions();
   }
 
   @override
@@ -38,11 +42,11 @@ class _MovieState extends State<Movie> {
                 Tags('rating', movie_list['rating']),
                 Tags('age', movie_list['age_restriction'])
               ];
-              //TODO remove last comma of genres
+              //TODO remove last comma of genres, check if data is not null for all detailsValue, check also if genres is not null
               String genres = movie_list['genre'] != null
                   ? movie_list['genre']
                   : movie_list['genres'].fold(
-                      '', (sum, element) => sum + element['title'] + ',\n');
+                      '', (sum, element) => sum + element['title'] + ', ');
               List detailsValue = [
                 movie_list['name_origin'],
                 movie_list['production'],
@@ -50,6 +54,8 @@ class _MovieState extends State<Movie> {
                 movie_list['duration'],
                 genres,
                 movie_list['premiere_kaz'],
+                movie_list['actors'],
+                movie_list['description'],
               ];
               List detailsKey = [
                 'Оригинальное название:',
@@ -58,6 +64,8 @@ class _MovieState extends State<Movie> {
                 'Продолжительность:',
                 'Жанр:',
                 'Премьера:',
+                'Актеры:',
+                'Описание:',
               ];
               return CustomScrollView(
                   physics: const BouncingScrollPhysics(),
@@ -89,7 +97,7 @@ class _MovieState extends State<Movie> {
                                   padding: EdgeInsets.only(
                                       left: 13,
                                       right:
-                                          12), //TODO hardcoded width of title
+                                          12), //TODO hardcoded width of title, width changing when swipped up
                                   width: MediaQuery.of(context).size.width,
                                   transform: Matrix4.translationValues(0, 5, 0),
                                   child: Card(
@@ -109,7 +117,7 @@ class _MovieState extends State<Movie> {
                                               fontSize: MediaQuery.of(context)
                                                       .size
                                                       .width /
-                                                  25),
+                                                  30),
                                         ),
                                       ))),
                             ],
@@ -151,25 +159,62 @@ class _MovieState extends State<Movie> {
                                   shrinkWrap: true,
                                   itemCount: detailsKey.length,
                                   itemBuilder: (context, index) {
-                                    return ListView(
-                                      shrinkWrap:
-                                          true, //TODO scrolling each item (fix it)
-                                      children: [
-                                        Row(
-                                          //TODO if overflowed go to newline
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(detailsKey[index]),
-                                            Text(detailsValue[index]),
-                                          ],
-                                        )
-                                      ],
+                                    return ListTile(
+                                      //TODO make it scrollable
+                                      title: Text(
+                                        detailsKey[index],
+                                        style: TextStyle(fontSize: 14),
+                                      ),
+                                      subtitle: Text(
+                                        detailsValue[index],
+                                        style: TextStyle(fontSize: 20),
+                                      ),
                                     );
                                   },
                                 ))),
+                        Container(
+                            padding: EdgeInsets.all(15),
+                            child: DefaultTabController(
+                              length: 3,
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: <Widget>[
+                                  Container(
+                                    child: TabBar(tabs: [
+                                      Tab(text: "Time"),
+                                      Tab(text: "Cinema"),
+                                      Tab(text: "Compact"),
+                                    ]),
+                                  ),
+                                  Container(
+                                      child: ListTile(
+                                    leading: Text('Время'),
+                                    title: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceEvenly,
+                                      children: [
+                                        Text('Язык'),
+                                        Text('Дет.'),
+                                        Text('Студ.'),
+                                        Text('Взр.'),
+                                        Text('VIP'),
+                                      ],
+                                    ),
+                                  )),
+                                  Container(
+                                    //Add this to give height
+                                    height: MediaQuery.of(context).size.height,
+                                    child: TabBarView(children: [
+                                      Sessions('Time', futureSessions),
+                                      Sessions('Cinema', futureSessions),
+                                      Container(
+                                        child: Text("User Body"),
+                                      ),
+                                    ]),
+                                  ),
+                                ],
+                              ),
+                            ))
                       ]),
                     ),
                   ]);

@@ -49,6 +49,7 @@ class Fetcher {
     print(url);
     print(id_cinema);
     Map data = jsonDecode(utf8.decode(response.bodyBytes));
+    //TODO check if it needed
     data['pageProps']['cinemas'].forEach((element) {
       cinemas[element['id']] = element['name'];
     });
@@ -60,7 +61,7 @@ class Fetcher {
   Future<Map> fetchMovies() async {
     var date = DateFormat('yyyy-MM-dd').format(DateTime.now());
     Response response = await get(
-        'https://kino.kz/api/cinema/sessions?cinemaId=$id_cinema&date=2020-11-24'); //TODO change date
+        'https://kino.kz/api/cinema/sessions?cinemaId=$id_cinema&date=$date'); //TODO change date
     print('movie');
     print(id_cinema);
     print(date);

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:movie_list/screens/cinema.dart';
 import 'package:movie_list/screens/movies.dart';
 import 'package:movie_list/screens/cities.dart';
 import 'package:movie_list/util/fetchCities.dart';
@@ -77,13 +78,13 @@ class _CinemasState extends State<Cinemas> {
                         ),
                         subtitle: Text(cinemas_list[index]['address']),
                         onTap: () {
-                          // print(cinemas_list[index]['id']);
-                          // dynamic result = Navigator.push(
-                          //     context,
-                          //     MaterialPageRoute(
-                          //       builder: (context) =>
-                          //           Movies(cinemas_list[index]['id']),
-                          //     ));
+                          print(cinemas_list[index]);
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    Cinema(cinemas_list[index]),
+                              ));
                         },
                       );
                     });
