@@ -2,12 +2,11 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:movie_list/screens/cinema.dart';
-import 'package:movie_list/screens/movies.dart';
-import 'package:movie_list/screens/cities.dart';
+import 'package:movie_list/screens/movie.dart';
+import 'package:movie_list/stylize/stylize.dart';
 import 'package:movie_list/util/fetchCities.dart';
 
 class Cinemas extends StatefulWidget {
-  // Cinemas({Key key}) : super(key: key);
   int id;
   Future<List> futureCinemas;
   Future<Map> futureCities;
@@ -17,33 +16,10 @@ class Cinemas extends StatefulWidget {
 }
 
 class _CinemasState extends State<Cinemas> {
-  // List<Fetcher> locations = [
-  //   Fetcher(id: 2),
-  // ];
   int id_cinema;
   Future<List> futureCinemas;
   Future<Map> futureCities;
   _CinemasState(this.id_cinema, this.futureCinemas, this.futureCities);
-
-  // List cinemas_list;
-
-  // @override
-  // void initState() {
-  //   super.initState();
-  //   Fetcher instance = Fetcher(id_cinema: id_cinema);
-  //   futureCinemas = instance.fetchCinemas();
-  //   // print('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAaa');
-  //   // print(cinemas_list.length);
-  //   // print('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAaa');
-  // }
-
-  // void updateTime(index) async {
-  //   Fetcher instance = locations[index];
-  //   await instance.fetchAlbum();
-  //   Navigator.pop(context, {
-  //     'cinemas': instance.cinemas,
-  //   });
-  // }
 
   String labelCity = 'Alma';
   void onBack(result) {
@@ -58,6 +34,7 @@ class _CinemasState extends State<Cinemas> {
   Widget build(BuildContext context) {
     // int id_cinema = ModalRoute.of(context).settings.arguments;
     return Scaffold(
+        backgroundColor: StylizeColor.backgroundColor,
         body: FutureBuilder<List>(
             future: futureCinemas,
             builder: (context, snapshot) {
@@ -69,21 +46,26 @@ class _CinemasState extends State<Cinemas> {
                       String cinema = cinemas_list[index]['name'];
                       return ListTile(
                         isThreeLine: true,
-                        title: Text(cinema),
+                        title: Text(
+                          cinema,
+                          style: TextStyle(
+                              color: StylizeColor.textColor, fontSize: 18),
+                        ),
                         leading: Image(
                           image: cinemas_list[index]['small_poster'] != ''
                               ? NetworkImage(
                                   cinemas_list[index]['small_poster'])
                               : AssetImage('assets/poster_v.jpg'),
                         ),
-                        subtitle: Text(cinemas_list[index]['address']),
+                        subtitle: Text(cinemas_list[index]['address'],
+                            style: TextStyle(color: Colors.grey)),
                         onTap: () {
                           print(cinemas_list[index]);
                           Navigator.push(
                               context,
                               MaterialPageRoute(
                                 builder: (context) =>
-                                    Cinema(cinemas_list[index]),
+                                    Movie('cinema', cinemas_list[index]['id']),
                               ));
                         },
                       );

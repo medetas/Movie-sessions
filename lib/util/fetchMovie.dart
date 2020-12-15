@@ -31,13 +31,9 @@ class MovieFetcher {
 
     var date = DateFormat('yyyy-MM-dd').format(DateTime.now());
     Response response = await get(
-        'https://kino.kz/api/movie/sessions?movieId=$id_movie&date=$date&city_id=2');
+        'https://kino.kz/api/movie/sessions?movieId=$id_movie&date=2020-12-15&city_id=2'); //TODO change date
     Map data = jsonDecode(utf8.decode(response.bodyBytes));
 
-    if (data['result']['sessions'] != null) {
-      return data['result']['sessions'];
-    } else {
-      return ['empty'];
-    }
+    return data['result']['sessions'] ?? ['empty'];
   }
 }

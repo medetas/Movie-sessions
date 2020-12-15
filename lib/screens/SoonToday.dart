@@ -2,36 +2,27 @@ import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:movie_list/screens/movie.dart';
 import 'package:movie_list/screens/tags.dart';
+import 'package:movie_list/stylize/stylize.dart';
 
 class SoonToday extends StatefulWidget {
-  Future<List> futureList2;
-  SoonToday(this.futureList2);
+  String title;
+  Future<List> futureMovieList;
+  SoonToday(this.title, this.futureMovieList);
   @override
-  _SoonTodayState createState() => _SoonTodayState(futureList2);
+  _SoonTodayState createState() => _SoonTodayState(title, futureMovieList);
 }
 
 class _SoonTodayState extends State<SoonToday> {
-  Future<List> futureList2;
-  _SoonTodayState(this.futureList2);
-
-  int selectedIndex = 0;
-  Color textColor = Color(0xffE9ECE4);
-  Color backgroundColor = Colors.white;
-  Color cardColor = Color(0xff013766);
-
-  Map ageList = {
-    0: [Colors.yellow[600], Colors.yellow[800]],
-    6: [Colors.amber[600], Colors.amber[800]],
-    12: [Colors.deepOrange[400], Colors.deepOrange[800]],
-    18: [Colors.red[600], Colors.red[900]],
-  };
+  String title;
+  Future<List> futureMovieList;
+  _SoonTodayState(this.title, this.futureMovieList);
 
   List<Widget> tags;
 
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<List>(
-        future: futureList2,
+        future: futureMovieList,
         builder: (context, snapshot) {
           if (snapshot.hasData) {
             List movies_list = snapshot.data ?? {};
@@ -41,9 +32,16 @@ class _SoonTodayState extends State<SoonToday> {
                   ? imageList.add((element['small_poster']))
                   : imageList.add('null');
             });
+
             return Column(children: [
-              Text('Скоро в кино',
-                  style: TextStyle(color: textColor, fontSize: 20)),
+              Container(
+                  alignment: Alignment.topLeft,
+                  padding: EdgeInsets.only(left: 5, bottom: 5),
+                  child: Text(title,
+                      style: TextStyle(
+                          color: StylizeColor.textColor,
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold))),
               Container(
                   child: CarouselSlider.builder(
                 itemCount: imageList.length,
@@ -63,8 +61,8 @@ class _SoonTodayState extends State<SoonToday> {
                         Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) =>
-                                  Movie(movies_list.elementAt(index)['id']),
+                              builder: (context) => Movie(
+                                  'movie', movies_list.elementAt(index)['id']),
                             ));
                       },
                       child: Container(

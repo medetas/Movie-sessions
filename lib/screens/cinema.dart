@@ -162,8 +162,8 @@ class _CinemaState extends State<Cinema> {
                           //Add this to give height
                           height: MediaQuery.of(context).size.height,
                           child: TabBarView(children: [
-                            Sessions('Movie', futureSessions),
-                            Sessions('Hall', futureSessions),
+                            // Sessions('Movie', futureSessions),
+                            // Sessions('Hall', futureSessions),
                             Container(
                               child: Text("User Body"),
                             ),

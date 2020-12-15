@@ -1,13 +1,11 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:movie_list/screens/cinemas.dart';
-import 'package:movie_list/util/fetchCities.dart';
+import 'package:movie_list/stylize/stylize.dart';
 
 class Cities extends StatefulWidget {
   Future<Map> futureCities;
   Cities(this.futureCities);
-  // Cities({Key key}) : super(key: key);
   @override
   _CitiesState createState() => _CitiesState(futureCities);
 }
@@ -19,8 +17,10 @@ class _CitiesState extends State<Cities> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+        backgroundColor: StylizeColor.backgroundColor,
         appBar: AppBar(
-          title: Text('Cities'),
+          backgroundColor: StylizeColor.backgroundColor,
+          title: Text('Выберите город'),
         ),
         body: FutureBuilder<Map>(
             future: futureCities,
@@ -33,9 +33,21 @@ class _CitiesState extends State<Cities> {
                       String city = cities_list.values.elementAt(index);
                       int id_city = cities_list.keys.elementAt(index);
                       return new ListTile(
-                        title: Text(city),
+                        title: Container(
+                            padding: EdgeInsets.symmetric(vertical: 3),
+                            decoration: BoxDecoration(
+                                border: Border(
+                                    bottom: BorderSide(
+                              color: StylizeColor.textColor,
+                              width: 2,
+                            ))),
+                            child: Text(
+                              city,
+                              style: TextStyle(
+                                  color: StylizeColor.textColor, fontSize: 22),
+                              textAlign: TextAlign.center,
+                            )),
                         onTap: () {
-                          print(cities_list.keys.elementAt(index));
                           Navigator.pop(context, [id_city, city]);
                         },
                       );

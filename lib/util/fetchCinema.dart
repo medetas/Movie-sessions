@@ -18,13 +18,29 @@ class CinemaFetcher {
 
     var date = DateFormat('yyyy-MM-dd').format(DateTime.now());
     Response response = await get(
-        'https://kino.kz/api/cinema/sessions?cinemaId=$id_cinema&date=$date');
+        'https://kino.kz/api/cinema/sessions?cinemaId=$id_cinema&date=2020-12-15');
     Map data = jsonDecode(utf8.decode(response.bodyBytes));
 
-    if (data['result']['sessions'] != null) {
-      return data['result']['sessions'];
-    } else {
-      return ['empty'];
-    }
+    return data['result']['sessions'] ?? ['empty'];
+  }
+
+  Future<Map> fetchCinema() async {
+    //TODO Make html response as 1 func in init (delete repeatition)
+    Response html_response = await get('https://kino.kz/cinemas');
+    var document = (html_response.body);
+    url = re.firstMatch(document).group(1);
+
+    Response response =
+        await get('https://kino.kz/_next/data/$url/cinema/$id_cinema.json');
+    print(url);
+    print(id_cinema);
+    Map data = jsonDecode(utf8.decode(response.bodyBytes));
+    //TODO check if it needed
+    // data['pageProps']['cinemas'].forEach((element) {
+    //   cinemas[element['id']] = element['name'];
+    // });
+    // print('AAAAAAAAAAa');
+    // print(data['pageProps']['cinemas'][14]['small_poster']);
+    return data['pageProps']['cinema'];
   }
 }

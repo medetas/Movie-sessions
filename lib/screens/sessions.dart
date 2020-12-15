@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:movie_list/stylize/stylize.dart';
 
 class Sessions extends StatefulWidget {
   String tab;
@@ -24,14 +25,114 @@ class _SessionsState extends State<Sessions> {
               return Text('NO SESSIONS');
             } else {
               List sessions = snapshot.data ?? [];
-              if (tab == 'Cinema') {
-                return ByCinema(sessions);
-              } else if (tab == 'Time') {
+              if (tab == 'По кинотеатрам') {
+                List sessionsByCinema = [];
+                //TODO optimize code
+                sessions.forEach((element) {
+                  var index = sessionsByCinema.indexWhere((value) =>
+                      value['movie']['id'] == element['cinema']['id']);
+                  if (!index.isNegative) {
+                    sessionsByCinema[index]['items'].add(
+                      {
+                        'session': {
+                          'session_date_tz': element['session']
+                              ['session_date_tz'],
+                          'lang_label': element['session']['lang_label'],
+                          'child': element['session']['child'],
+                          'student': element['session']['student'],
+                          'adult': element['session']['adult'],
+                          'vip': element['session']['vip'],
+                        },
+                        'hall': {
+                          'name': element['hall']['name'],
+                        }
+                      },
+                    );
+                  } else {
+                    sessionsByCinema.add({
+                      'movie': {
+                        'id': element['cinema']['id'],
+                        'name_rus': element['cinema']['name'],
+                        'address': element['cinema']['address'],
+                      },
+                      'items': [
+                        {
+                          'session': {
+                            'session_date_tz': element['session']
+                                ['session_date_tz'],
+                            'lang_label': element['session']['lang_label'],
+                            'child': element['session']['child'],
+                            'student': element['session']['student'],
+                            'adult': element['session']['adult'],
+                            'vip': element['session']['vip'],
+                          },
+                          'hall': {
+                            'name': element['hall']['name'],
+                          }
+                        },
+                      ],
+                    });
+                  }
+                });
+
+                return ByCinema(tab, sessionsByCinema);
+              } else if (tab == 'По времени') {
                 return ByTime(sessions);
-              } else if (tab == 'Movie') {
-                return ByMovie(sessions);
+              } else if (tab == 'По фильмам') {
+                return ByCinema(tab, sessions);
               } else {
-                return ByHall(sessions);
+                List sessionsByHall = [];
+                //TODO optimize code
+                sessions.forEach((element) {
+                  element['items'].forEach((itemsElems) {
+                    var index = sessionsByHall.indexWhere((value) =>
+                        value['hall']['id'] == itemsElems['hall']['id']);
+                    if (!index.isNegative) {
+                      sessionsByHall[index]['items'].add(
+                        {
+                          'session': {
+                            'session_date_tz': itemsElems['session']
+                                ['session_date_tz'],
+                            'lang_label': itemsElems['session']['lang_label'],
+                            'child': itemsElems['session']['child'],
+                            'student': itemsElems['session']['student'],
+                            'adult': itemsElems['session']['adult'],
+                            'vip': itemsElems['session']['vip'],
+                          },
+                          'movie': {
+                            'id': element['movie']['id'],
+                            'name_rus': element['movie']['name_rus'],
+                          },
+                        },
+                      );
+                    } else {
+                      sessionsByHall.add({
+                        'hall': {
+                          'id': itemsElems['hall']['id'],
+                          'name': itemsElems['hall']['name'],
+                        },
+                        'items': [
+                          {
+                            'session': {
+                              'session_date_tz': itemsElems['session']
+                                  ['session_date_tz'],
+                              'lang_label': itemsElems['session']['lang_label'],
+                              'child': itemsElems['session']['child'],
+                              'student': itemsElems['session']['student'],
+                              'adult': itemsElems['session']['adult'],
+                              'vip': itemsElems['session']['vip'],
+                            },
+                            'movie': {
+                              'id': element['movie']['id'],
+                              'name_rus': element['movie']['name_rus'],
+                            },
+                          },
+                        ],
+                      });
+                    }
+                  });
+                });
+                return ByHall(sessionsByHall);
               }
             }
           } else if (snapshot.hasError) {
@@ -49,152 +150,125 @@ class ByTime extends StatelessWidget {
   ByTime(this.sessionsByTime);
   @override
   Widget build(BuildContext context) {
-    return ListView.builder(
-        itemCount: sessionsByTime.length,
-        itemBuilder: (context, index) {
-          // RegExp reg = new RegExp(r"(.+?\d)");
-          // var hall = reg
-          //     .firstMatch(sessionsByTime[index]['hall']['name'])
-          //     .group(1);
-          return ListTile(
-            leading: Container(
-                constraints: BoxConstraints(
-                    maxWidth: 40), //TODO hardcoded time column width
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    Text(DateFormat('HH:mm').format(DateTime.parse(
-                        sessionsByTime[index]['session']['session_date_tz']))),
-                    Text(
-                      sessionsByTime[index]['hall']['name'],
-                      overflow: TextOverflow.ellipsis,
-                      maxLines: 2,
-                    )
-                  ],
-                )),
-            title: Text(sessionsByTime[index]['cinema']['name']),
-            subtitle: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                Text(sessionsByTime[index]['session']['lang_label']),
-                Text(sessionsByTime[index]['session']['child'].toString()),
-                Text(sessionsByTime[index]['session']['student'].toString()),
-                Text(sessionsByTime[index]['session']['adult'].toString()),
-                Text(sessionsByTime[index]['session']['vip'].toString())
-              ],
-            ),
-          );
-        });
+    return Container(
+        child: ListView.builder(
+            physics: NeverScrollableScrollPhysics(),
+            shrinkWrap: true,
+            itemCount: sessionsByTime.length,
+            itemBuilder: (context, index) {
+              return ListTile(
+                contentPadding: EdgeInsets.only(bottom: 5),
+                leading: SessionTime(
+                    sessionsByTime[index]['session']['session_date_tz']),
+                title: SessionCinema(sessionsByTime[index]),
+                subtitle: SessionPrices(sessionsByTime[index]['session']),
+              );
+            }));
   }
 }
 
 class ByCinema extends StatelessWidget {
   //TODO change interface
-  List sessions;
-  ByCinema(this.sessions);
+  String tab;
+  List sessionsByCinema;
+  ByCinema(this.tab, this.sessionsByCinema);
 
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
-        itemCount: sessions.length,
-        itemBuilder: (context, index) {
-          List sessionsByCinema = List.from(sessions);
-          sessionsByCinema
-              .sort((a, b) => a['cinema']['id'].compareTo(b['cinema']['id']));
-          return ListTile(
-            leading: Container(
-                constraints: BoxConstraints(
-                    maxWidth: 40), //TODO hardcoded time column width
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    Text(DateFormat('HH:mm').format(DateTime.parse(
-                        sessionsByCinema[index]['session']
-                            ['session_date_tz']))),
-                    Text(
-                      sessionsByCinema[index]['hall']['name'],
-                      overflow: TextOverflow.ellipsis,
-                      maxLines: 2,
-                    )
-                  ],
-                )),
-            title: Text(sessionsByCinema[index]['cinema']['name']),
-            subtitle: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                Text(sessionsByCinema[index]['session']['lang_label']),
-                Text(sessionsByCinema[index]['session']['child'].toString()),
-                Text(sessionsByCinema[index]['session']['student'].toString()),
-                Text(sessionsByCinema[index]['session']['adult'].toString()),
-                Text(sessionsByCinema[index]['session']['vip'].toString())
-              ],
-            ),
-          );
-        });
-  }
-}
-
-class ByMovie extends StatelessWidget {
-  //TODO change interface
-  List sessionsByMovie;
-  ByMovie(this.sessionsByMovie);
-
-  @override
-  Widget build(BuildContext context) {
-    return ListView.builder(
+        physics: NeverScrollableScrollPhysics(),
         shrinkWrap: true,
-        itemCount: sessionsByMovie.length,
+        itemCount: sessionsByCinema.length,
         itemBuilder: (context, index) {
+          String subtitle = tab == 'По кинотеатрам'
+              ? sessionsByCinema[index]['movie']['address']
+              : 'Возрастной рейтинг: с ' +
+                  sessionsByCinema[index]['movie']['age_restriction']
+                      .toString() +
+                  ' лет';
           return Column(
             children: [
               ListTile(
-                title: Text(sessionsByMovie[index]['movie']['name_rus']),
+                title: Text(
+                  sessionsByCinema[index]['movie']['name_rus'],
+                  style: TextStyle(
+                      color: StylizeColor.selectedTextColor, fontSize: 20),
+                ),
+                subtitle: Text(subtitle,
+                    style: TextStyle(color: Colors.grey[300], fontSize: 14)),
               ),
               ListView.builder(
+                  physics: NeverScrollableScrollPhysics(),
                   shrinkWrap: true,
-                  itemCount: sessionsByMovie[index]['items'].length,
+                  itemCount: sessionsByCinema[index]['items'].length,
                   itemBuilder: (context2, index2) {
                     return ListTile(
-                        leading: Container(
-                            constraints: BoxConstraints(maxWidth: 40),
-                            child: Column(
-                              children: [
-                                Text(DateFormat('HH:mm').format(DateTime.parse(
-                                    sessionsByMovie[index]['items'][index2]
-                                        ['session']['session_date_tz']))),
-                                Text(
-                                  sessionsByMovie[index]['items'][index2]
-                                      ['hall']['name'],
-                                  overflow: TextOverflow.ellipsis,
-                                  maxLines: 2,
-                                )
-                              ],
-                            )),
-                        title: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            Text(sessionsByMovie[index]['items'][index2]
-                                ['session']['lang_label']),
-                            Text(sessionsByMovie[index]['items'][index2]
-                                    ['session']['child']
-                                .toString()),
-                            Text(sessionsByMovie[index]['items'][index2]
-                                    ['session']['student']
-                                .toString()),
-                            Text(sessionsByMovie[index]['items'][index2]
-                                    ['session']['adult']
-                                .toString()),
-                            Text(sessionsByMovie[index]['items'][index2]
-                                    ['session']['vip']
-                                .toString())
-                          ],
-                        ));
+                      leading: SessionTime(sessionsByCinema[index]['items']
+                          [index2]['session']['session_date_tz']),
+                      title: Text(
+                        sessionsByCinema[index]['items'][index2]['hall']
+                            ['name'],
+                        style: TextStyle(color: StylizeColor.textColor),
+                      ),
+                      subtitle: SessionPrices(
+                          sessionsByCinema[index]['items'][index2]['session']),
+                    );
                   })
             ],
           );
         });
   }
 }
+
+// class ByMovie extends StatelessWidget {
+//   //TODO change interface
+//   String tab;
+//   List sessionsByCinema;
+//   ByMovie(this.tab, this.sessionsByCinema);
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return ListView.builder(
+//         physics: NeverScrollableScrollPhysics(),
+//         shrinkWrap: true,
+//         itemCount: sessionsByCinema.length,
+//         itemBuilder: (context, index) {
+//           String subtitle = tab == 'По кинотеатрам'
+//               ? sessionsByCinema[index]['movie']['address']
+//               : sessionsByCinema[index]['movie']['age_restriction'].toString();
+//           return Column(
+//             children: [
+//               ListTile(
+//                 title: Text(
+//                   sessionsByCinema[index]['movie']['name_rus'],
+//                   style: TextStyle(
+//                       color: StylizeColor.selectedTextColor, fontSize: 18),
+//                 ),
+//                 subtitle: Text(subtitle,
+//                     style: TextStyle(color: Colors.grey[300], fontSize: 12)),
+//               ),
+//               ListView.builder(
+//                   physics: NeverScrollableScrollPhysics(),
+//                   shrinkWrap: true,
+//                   itemCount: sessionsByCinema[index]['items'].length,
+//                   itemBuilder: (context2, index2) {
+//                     return ListTile(
+//                       leading: SessionTime(sessionsByCinema[index]['items']
+//                           [index2]['session']['session_date_tz']),
+//                       title: Text(
+//                         sessionsByCinema[index]['items'][index2]['hall']
+//                             ['name'],
+//                         style: TextStyle(color: StylizeColor.textColor),
+//                       ),
+//                       subtitle: SessionPrices(
+//                           sessionsByCinema[index]['items'][index2]['session']),
+//                     );
+//                   })
+//             ],
+//           );
+//         });
+//   }
+// }
 
 class ByHall extends StatelessWidget {
   //TODO change interface
@@ -204,36 +278,117 @@ class ByHall extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
+        physics: NeverScrollableScrollPhysics(),
+        shrinkWrap: true,
         itemCount: sessionsByHall.length,
         itemBuilder: (context, index) {
-          return ListTile(
-            leading: Container(
-                constraints: BoxConstraints(
-                    maxWidth: 40), //TODO hardcoded time column width
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    Text(DateFormat('HH:mm').format(DateTime.parse(
-                        sessionsByHall[index]['session']['session_date_tz']))),
-                    Text(
-                      sessionsByHall[index]['hall']['name'],
-                      overflow: TextOverflow.ellipsis,
-                      maxLines: 2,
-                    )
-                  ],
-                )),
-            title: Text(sessionsByHall[index]['cinema']['name']),
-            subtitle: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                Text(sessionsByHall[index]['session']['lang_label']),
-                Text(sessionsByHall[index]['session']['child'].toString()),
-                Text(sessionsByHall[index]['session']['student'].toString()),
-                Text(sessionsByHall[index]['session']['adult'].toString()),
-                Text(sessionsByHall[index]['session']['vip'].toString())
-              ],
-            ),
+          return Column(
+            children: [
+              ListTile(
+                title: Text(
+                  sessionsByHall[index]['hall']['name'],
+                  style: TextStyle(
+                      color: StylizeColor.selectedTextColor, fontSize: 24),
+                ),
+              ),
+              ListView.builder(
+                  physics: NeverScrollableScrollPhysics(),
+                  shrinkWrap: true,
+                  itemCount: sessionsByHall[index]['items'].length,
+                  itemBuilder: (context2, index2) {
+                    return ListTile(
+                      leading: SessionTime(sessionsByHall[index]['items']
+                          [index2]['session']['session_date_tz']),
+                      title: Text(
+                        sessionsByHall[index]['items'][index2]['movie']
+                            ['name_rus'],
+                        style: TextStyle(color: StylizeColor.textColor),
+                      ),
+                      subtitle: SessionPrices(
+                          sessionsByHall[index]['items'][index2]['session']),
+                    );
+                  })
+            ],
           );
         });
   }
+}
+
+class SessionTime extends StatelessWidget {
+  String time;
+  SessionTime(this.time);
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+        padding: EdgeInsets.symmetric(vertical: 5, horizontal: 5),
+        decoration: BoxDecoration(
+            border:
+                Border.all(color: StylizeColor.selectedTextColor, width: 2)),
+        child: Text(
+          DateFormat('HH:mm').format(DateTime.parse(time)),
+          style: TextStyle(color: StylizeColor.textColor, fontSize: 24),
+        ));
+  }
+}
+
+class SessionCinema extends StatelessWidget {
+  Map cinema;
+  SessionCinema(this.cinema);
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            cinema['cinema']['name'],
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(color: StylizeColor.textColor, fontSize: 17),
+          ),
+          Text(
+            cinema['hall']['name'],
+            overflow: TextOverflow.ellipsis,
+            maxLines: 2,
+            style: TextStyle(color: Colors.grey[300], fontSize: 13),
+          )
+        ]);
+  }
+}
+
+class SessionPrices extends StatelessWidget {
+  Map prices;
+  SessionPrices(this.prices);
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          prices['lang_label'],
+          style: TextStyle(color: StylizeColor.textColor, fontSize: 15),
+        ),
+        Text(
+          priceChecker(prices['child']),
+          style: TextStyle(color: StylizeColor.textColor, fontSize: 15),
+        ),
+        Text(
+          priceChecker(prices['student']),
+          style: TextStyle(color: StylizeColor.textColor, fontSize: 15),
+        ),
+        Text(
+          priceChecker(prices['adult']),
+          style: TextStyle(color: StylizeColor.textColor, fontSize: 15),
+        ),
+        Text(
+          priceChecker(prices['vip']),
+          style: TextStyle(color: StylizeColor.textColor, fontSize: 15),
+        )
+      ],
+    );
+  }
+}
+
+String priceChecker(price) {
+  return price != 0 ? price.toString() : '-';
 }
