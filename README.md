@@ -5,4 +5,4 @@ Upcoming updates:
 2. Collapsable movie/cinema details widget
 3. Some optimizations and improvements
 
-<img src = 'assets/AppGif.mp4'>
+<img src = 'assets/AppGif.gif'>
