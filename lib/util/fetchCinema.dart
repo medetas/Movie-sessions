@@ -18,7 +18,7 @@ class CinemaFetcher {
 
     var date = DateFormat('yyyy-MM-dd').format(DateTime.now());
     Response response = await get(
-        'https://kino.kz/api/cinema/sessions?cinemaId=$id_cinema&date=2020-12-15');
+        'https://kino.kz/api/cinema/sessions?cinemaId=$id_cinema&date=$date');
     Map data = jsonDecode(utf8.decode(response.bodyBytes));
 
     return data['result']['sessions'] ?? ['empty'];

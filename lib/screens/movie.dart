@@ -1,3 +1,4 @@
+import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:movie_list/screens/sessions.dart';
@@ -76,7 +77,7 @@ class _InfoScreenState extends State<InfoScreen> {
   List<Widget> tags;
   List detailsKey, detailsValue;
   List<Widget> infoAndSessions;
-  Image poster;
+  List poster = [];
   RegExp re = new RegExp(r"(<([^>]+)>)");
   String title;
   List<String> tabs;
@@ -88,7 +89,7 @@ class _InfoScreenState extends State<InfoScreen> {
     if (movieOrCinema == 'movie') {
       title = info_list['name_rus'];
       //TODO check if null
-      poster = info_list['posters']['p1192x597'] != ''
+      poster.add(info_list['posters']['p1192x597'] != ''
           ? Image.network(
               info_list['posters']['p1192x597'],
               fit: BoxFit.cover,
@@ -96,7 +97,14 @@ class _InfoScreenState extends State<InfoScreen> {
           : Image.asset(
               'assets/poster_h.jpg',
               fit: BoxFit.cover,
-            );
+            ));
+      if (info_list['gallery']['g1192x597'] != null) {
+        info_list['gallery']['g1192x597']
+            .forEach((item) => poster.add(Image.network(
+                  item,
+                  fit: BoxFit.cover,
+                )));
+      }
       tabs = ["По времени", "По кинотеатрам"];
 
       tags = [
@@ -162,7 +170,7 @@ class _InfoScreenState extends State<InfoScreen> {
       cinemaInfo = cinemaInfo.replaceAll(reLi, " • ");
       cinemaInfo = cinemaInfo.replaceAll(re, "");
 
-      poster = info_list['big_poster'] != ''
+      poster.add(info_list['big_poster'] != ''
           ? Image.network(
               info_list['big_poster'],
               fit: BoxFit.cover,
@@ -170,8 +178,8 @@ class _InfoScreenState extends State<InfoScreen> {
           : Image.asset(
               'assets/poster_h.jpg',
               fit: BoxFit.cover,
-            );
-
+            ));
+//TODO photoviewer for cinema
       tabs = ["По фильмам", "По залам"];
 
       infoAndSessions = [
@@ -189,9 +197,9 @@ class _InfoScreenState extends State<InfoScreen> {
           SliverAppBar(
             backgroundColor: StylizeColor.backgroundColor,
             stretch: true,
-            onStretchTrigger: () {
-              return;
-            },
+            // onStretchTrigger: () {
+
+            // },
             expandedHeight: 295,
             flexibleSpace: FlexibleSpaceBar(
               stretchModes: <StretchMode>[
@@ -205,7 +213,7 @@ class _InfoScreenState extends State<InfoScreen> {
               background: Stack(
                 fit: StackFit.expand,
                 children: [
-                  poster,
+                  poster[0],
                   const DecoratedBox(
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
